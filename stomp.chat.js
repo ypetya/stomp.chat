@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 
 const {ChatClient, parseArgs} = require('./stomp.chat.lib');
 const {host, port, noEcho} = parseArgs();
