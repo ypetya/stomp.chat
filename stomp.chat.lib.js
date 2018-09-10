@@ -5,10 +5,10 @@ const net = require('net');
 const ARGS = {};
 function parseArgs() {
     console.log('Node STOMP chat.\n\n' +
-            'Valid command line options:\n' +
-            '[host:<host>] : host to connect to, default: localhost\n' +
-            '[port:<port>] : port to connect to, default: 3490\n' +
-            '[noEcho:<true|false>] : echo messages back sent by this client,default: false\n');
+        'Valid command line options:\n' +
+        '[host:<host>] : host to connect to, default: localhost\n' +
+        '[port:<port>] : port to connect to, default: 3490\n' +
+        '[noEcho:<true|false>] : echo messages back sent by this client,default: false\n');
 
 
     console.log('Command line arguments: ')
@@ -44,7 +44,7 @@ class Chat {
                         const headers = {};
 
                         for (let i = 1; i < arr.length ||
-                                (arr[i] && arr[i].length === 0); i++) {
+                            (arr[i] && arr[i].length === 0); i++) {
                             const header = arr[i].split(':');
                             headers[header[0]] = header[1];
                         }
@@ -108,7 +108,7 @@ class Chat {
 
     async send(topic, body) {
         return await this.request(`SEND\ndestination:${topic}\ncontent-type:text/plain\n\n` +
-                `${JSON.stringify(body)}\0"`);
+            `${JSON.stringify(body)}\0"`);
     }
 
     async diag(stat) {
@@ -142,9 +142,9 @@ class ChatClient extends Chat {
     connected(sessionId) {
         this.id = `/clients/${sessionId}`;
         this.subscribe(this.id)
-                .then(() => this.subscribe('/chat-servers'))
-                .then(() => this.send('/chat-servers',
-                            {content: 'New client', from: this.id}))
+            .then(() => this.subscribe('/chat-servers'))
+            .then(() => this.send('/chat-servers',
+                { content: 'New client', from: this.id }))
     }
 
     message(cmd, headers, body) {
@@ -159,12 +159,12 @@ class ChatClient extends Chat {
 
         if (l[0] == 'send') {
             body.splice(0, 2);
-            let msg = {content: body.join(' '), from: this.id};
+            let msg = { content: body.join(' '), from: this.id };
             this.send(l[1], msg);
         } else if (l[0] == 'repeat') {
             body.splice(0, 3);
             this.repeat(Number(l[1]), i => this.send(l[2],
-                        {content: `${i}:` + body.join(' '), from: this.id}));
+                { content: `${i}:` + body.join(' '), from: this.id }));
         } else if (l[0] == 'subscribe') {
             this.subscribe(l[1]);
         } else if (l[0] == 'unsubscribe') {
@@ -173,19 +173,19 @@ class ChatClient extends Chat {
             this.diag(l[1]);
         } else {
             console.log('Usage format:\n\n' +
-                    'send <topic> message body\n' +
-                    'repeat <count> <topic> message body\n' +
-                    'subscribe <topic>\n' +
-                    'unsubscribe <topic>\n\n' +
-                    'diag <session-size|pubsub-size>'
-                    );
+                'send <topic> message body\n' +
+                'repeat <count> <topic> message body\n' +
+                'subscribe <topic>\n' +
+                'unsubscribe <topic>\n\n' +
+                'diag <session-size|pubsub-size>'
+            );
         }
     }
 }
 
 class ChatServer extends Chat {
-    constructor(props) {
-        super(props);
+    constructor({ host, port, noEcho = true }) {
+        super({ host, port, noEcho });
         this.rooms = [];
         this.clients = [];
     }
@@ -193,22 +193,22 @@ class ChatServer extends Chat {
     connected(sessionId) {
         this.id = sessionId;
         this.subscribe(`/chat-servers`);
-        this.send('/chat-servers', {content: 'new server', from: sessionId});
+        this.send('/chat-servers', { content: 'new server', from: sessionId });
     }
 
     message(cmd, headers, body) {
         switch (cmd) {
             case 'MESSAGE':
                 if (body.content === 'new server') {
-                    this.send(body.from, {content: 'already listening'});
+                    this.send('/chat-servers', { content: 'already listening', from: this.id });
                 } else if (body.content === 'already listening') {
                     console.log(`There is already a chat server listening with sessionId:${body.from}.`);
                     this.disconnect();
                 } else if (body.content === 'clients') {
                     if (!this.clients.includes(body.from)) {
                         this.clients.push(body.from);
-                        this.send(body.from, {clients});
                     }
+                    this.send(body.from, { content: this.clients, from: this.id });
                 } else if (body.content === 'bye') {
                     if (this.clients.includes(body.from)) {
                         const c = this.clients.indexOf(body.from);
@@ -217,7 +217,6 @@ class ChatServer extends Chat {
                 }
                 break;
         }
-
     }
 }
 
