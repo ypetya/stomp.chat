@@ -6,6 +6,7 @@ const ARGS = {};
 function parseArgs() {
     console.log('Node STOMP chat.\n\n' +
         'Valid command line options:\n' +
+        '[nickname:<nickname>] : nickname to use instead of /clients/<sessionid>\n' +
         '[host:<host>] : host to connect to, default: localhost\n' +
         '[port:<port>] : port to connect to, default: 3490\n' +
         '[noEcho:<true|false>] : echo messages back sent by this client,default: false\n');
@@ -24,6 +25,7 @@ function parseArgs() {
 
 class Chat {
     constructor(props) {
+        this.nickname = props.nickname;
         this.conn = net.connect(props.port || 3490, props.host || 'localhost');
         this.noEcho = props.noEcho;
         this.conn.setNoDelay(true);
@@ -140,7 +142,7 @@ class ChatClient extends Chat {
     }
 
     connected(sessionId) {
-        this.id = `/clients/${sessionId}`;
+        this.id = `/clients/${this.nickname || sessionId}`;
         this.subscribe(this.id)
             .then(() => this.subscribe('/chat-servers'))
             .then(() => this.send('/chat-servers',
@@ -172,12 +174,13 @@ class ChatClient extends Chat {
         } else if (l[0] == 'diag') {
             this.diag(l[1]);
         } else {
-            console.log('Usage format:\n\n' +
-                'send <topic> message body\n' +
-                'repeat <count> <topic> message body\n' +
-                'subscribe <topic>\n' +
-                'unsubscribe <topic>\n\n' +
-                'diag <session-size|pubsub-size>'
+            console.log('Please use a command in the following format:\n\n' +
+                'list\t\t- sends a list clients message to /chat-servers\n' +
+                'send <topic> message body\t\t- sends a message to a specific topic\n' +
+                'repeat <count> <topic> message body\t\t- sends a message count times to a specific topic\n' +
+                'subscribe <topic>\t\t- subscribe to a topic. can contain * as a whiledcard character\n' +
+                'unsubscribe <topic>\t\t- ask to remove subscription from a topic\n\n' +
+                'diag <session-size|pubsub-size>\t\t- send diagnostic message'
             );
         }
     }
