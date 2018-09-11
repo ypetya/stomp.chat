@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const {ChatClient, parseArgs} = require('./stomp.chat.lib');
-const {host, port, noEcho} = parseArgs();
+const {host, port, noEcho, nickname} = parseArgs();
 
 const readline = require('readline');
 const rl = readline.createInterface({
@@ -10,7 +10,7 @@ const rl = readline.createInterface({
     prompt: 'STOMP-CHAT> '
 });
 
-const client = new ChatClient({host, port, noEcho});
+const client = new ChatClient({host, port, noEcho, nickname});
 
 rl.prompt();
 
