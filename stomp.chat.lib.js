@@ -65,7 +65,7 @@ class Chat {
 
                         if (this.noEcho && body.from === this.id)
                             return;
-
+                        
                         this.message.call(this, arr[0], headers, body);
                     });
                 } else {
