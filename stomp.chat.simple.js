@@ -1,15 +1,6 @@
 #!/usr/bin/env node
 
-require('dotenv').config();
-
-'host,port,nickname'.split(',').forEach(config => {
-    if (!process.env[config]) {
-        console.log(`Missing config for environment: ${config}
-        Please add it to your environment variables or into the .env file as line
-        key=value`);
-        process.exit(1);
-    }
-});
+require('./config');
 
 const { ChatClient } = require('./stomp.chat.lib');
 
