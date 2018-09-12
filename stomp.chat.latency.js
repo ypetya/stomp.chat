@@ -8,7 +8,7 @@ const { host, port, nickname, noEcho = true } = process.env;
 class LatencyCheck extends ChatClient {
 
     connected(sessionId) {
-        this.id = `${this.sessionId}`;
+        this.id = sessionId;
         this.subscribe(`/latency/${this.id}`)
             .then(() => this.tick())
     }
